@@ -37,11 +37,17 @@ class UmbLinkPickerValueValidator extends UmbControllerBase implements UmbValida
 	}
 
 	#value: unknown;
+	#queryString?: string;
 
 	#unique = 'UmbLinkPickerValueValidator';
 
 	setValue(value: unknown) {
 		this.#value = value;
+		this.validate();
+	}
+
+	setQueryString(queryString?: string) {
+		this.#queryString = queryString;
 		this.validate();
 	}
 
@@ -65,7 +71,9 @@ class UmbLinkPickerValueValidator extends UmbControllerBase implements UmbValida
 	}
 
 	async validate(): Promise<void> {
-		this.#isValid = !!this.getValue();
+		// If there's a query string (anchor or query parameter), the source is optional
+		// Otherwise, the source is required
+		this.#isValid = !!this.getValue() || !!this.#queryString;
 
 		if (this.#isValid) {
 			this.#context?.messages.removeMessageByKey(this.#unique);
@@ -110,6 +118,8 @@ export class UmbLinkPickerModalElement extends UmbModalBaseElement<UmbLinkPicker
 	@query('umb-input-media')
 	private _mediaPickerElement?: UmbInputMediaElement;
 
+	#validator?: UmbLinkPickerValueValidator;
+
 	constructor() {
 		super();
 
@@ -136,10 +146,11 @@ export class UmbLinkPickerModalElement extends UmbModalBaseElement<UmbLinkPicker
 		this.#getMediaTypes();
 		this.populateLinkUrl();
 
-		const validator = new UmbLinkPickerValueValidator(this, '$.type');
+		this.#validator = new UmbLinkPickerValueValidator(this, '$.type');
 
 		this.observe(this.modalContext?.value, (value) => {
-			validator.setValue(value?.link.type);
+			this.#validator?.setValue(value?.link.type);
+			this.#validator?.setQueryString(value?.link.queryString ?? undefined);
 		});
 	}
 
@@ -181,18 +192,22 @@ export class UmbLinkPickerModalElement extends UmbModalBaseElement<UmbLinkPicker
 
 	#onLinkAnchorInput(event: UUIInputEvent) {
 		const query = (event.target.value as string) ?? '';
+		let queryString = '';
 		if (query.startsWith('#') || query.startsWith('?')) {
+			queryString = query;
 			this.#partialUpdateLink({ queryString: query });
-			return;
-		}
-
-		if (query.includes('=')) {
+		} else if (query.includes('=')) {
+			queryString = `?${query}`;
 			this.#partialUpdateLink({ queryString: `?${query}` });
 		} else if (query) {
+			queryString = `#${query}`;
 			this.#partialUpdateLink({ queryString: `#${query}` });
 		} else {
+			queryString = '';
 			this.#partialUpdateLink({ queryString: '' });
 		}
+		// Update validator with the new query string
+		this.#validator?.setQueryString(queryString);
 	}
 
 	#onLinkTitleInput(event: UUIInputEvent) {
@@ -307,6 +322,8 @@ export class UmbLinkPickerModalElement extends UmbModalBaseElement<UmbLinkPicker
 
 	#resetUrl() {
 		this.#partialUpdateLink({ type: null, url: null });
+		// Clear the query string in the validator when resetting
+		this.#validator?.setQueryString(undefined);
 	}
 
 	async #onSubmit() {
@@ -324,6 +341,8 @@ export class UmbLinkPickerModalElement extends UmbModalBaseElement<UmbLinkPicker
 
 	#triggerExternalUrl() {
 		this.#partialUpdateLink({ type: 'external' });
+		// When switching to external/manual type, revalidate with current queryString
+		this.#validator?.setQueryString(this.value.link.queryString ?? undefined);
 	}
 
 	override render() {
@@ -349,11 +368,13 @@ export class UmbLinkPickerModalElement extends UmbModalBaseElement<UmbLinkPicker
 	}
 
 	#renderLinkType() {
+		// Only mandatory if there's no query string (anchor or query parameter)
+		const isMandatory = !this.value.link.queryString;
 		return html`
 			<umb-property-layout
 				orientation=${this.#propertyLayoutOrientation}
 				label=${this.localize.term('linkPicker_modalSource')}
-				mandatory
+				?mandatory=${isMandatory}
 				?invalid=${this._missingLinkUrl}>
 				<div slot="editor">
 					${this.#renderLinkTypeSelection()} ${this.#renderDocumentPicker()} ${this.#renderMediaPicker()}
