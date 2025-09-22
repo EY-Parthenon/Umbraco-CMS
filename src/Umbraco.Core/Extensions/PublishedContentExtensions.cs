@@ -15,7 +15,7 @@ using Umbraco.Cms.Core.Services.Navigation;
 
 namespace Umbraco.Extensions;
 
-public static class PublishedContentExtensions
+public static partial class PublishedContentExtensions
 {
     #region Name
 
