@@ -32,7 +32,7 @@ public class ApiContentResponseBuilder : ApiContentBuilderBase<IApiContentRespon
     protected override IApiContentResponse Create(IPublishedContent content, string name, IApiContentRoute route, IDictionary<string, object?> properties)
     {
         IDictionary<string, IApiContentRoute> cultures = GetCultures(content);
-        return new ApiContentResponse(content.Key, name, content.ContentType.Alias, content.CreateDate, content.CultureDate(VariationContextAccessor), route, properties, cultures);
+        return new ApiContentResponse(content.Key, name, content.ContentType.Alias, content.CreateDate, PublishedContentCultureExtensions.CultureDate(content, VariationContextAccessor), route, properties, cultures);
     }
 
     protected virtual IDictionary<string, IApiContentRoute> GetCultures(IPublishedContent content)

@@ -36,16 +36,16 @@ public sealed class ApiMediaBuilder : IApiMediaBuilder
             Properties(media));
 
     private string? Extension(IPublishedContent media)
-        => media.Value<string>(_publishedValueFallback, Constants.Conventions.Media.Extension);
+        => PublishedContentPropertyExtensions.Value<string>(media, _publishedValueFallback, Constants.Conventions.Media.Extension);
 
     private int? Width(IPublishedContent media)
-        => media.Value<int?>(_publishedValueFallback, Constants.Conventions.Media.Width);
+        => PublishedContentPropertyExtensions.Value<int?>(media, _publishedValueFallback, Constants.Conventions.Media.Width);
 
     private int? Height(IPublishedContent media)
-        => media.Value<int?>(_publishedValueFallback, Constants.Conventions.Media.Height);
+        => PublishedContentPropertyExtensions.Value<int?>(media, _publishedValueFallback, Constants.Conventions.Media.Height);
 
     private int? Bytes(IPublishedContent media)
-        => media.Value<int?>(_publishedValueFallback, Constants.Conventions.Media.Bytes);
+        => PublishedContentPropertyExtensions.Value<int?>(media, _publishedValueFallback, Constants.Conventions.Media.Bytes);
 
     // map all media properties except the umbraco ones, as we've already included those in the output
     private IDictionary<string, object?> Properties(IPublishedContent media)

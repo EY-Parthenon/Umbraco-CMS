@@ -114,7 +114,7 @@ public sealed class ApiContentRouteBuilder : IApiContentRouteBuilder
             return null;
         }
 
-        var rootPath = root.UrlSegment(_variationContextAccessor, culture) ?? string.Empty;
+        var rootPath = PublishedContentUrlExtensions.UrlSegment(root, _variationContextAccessor, culture) ?? string.Empty;
 
         if (_globalSettings.HideTopLevelNodeFromPath == false)
         {
