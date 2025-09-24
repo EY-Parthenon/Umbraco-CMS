@@ -104,6 +104,23 @@ export class UmbWorkspaceBreadcrumbElement extends UmbLitElement {
 			:host {
 				margin-left: var(--uui-size-layout-1);
 			}
+
+			uui-breadcrumbs {
+				display: flex;
+				flex-wrap: wrap;
+				row-gap: 3px;
+				column-gap: 0;
+				align-items: center;
+				max-height: calc(2 * 1.5em + 3px); /* Max 2 rows with 3px gap */
+				overflow: hidden; /* Prevent scrollbars */
+				line-height: 1.5;
+			}
+
+			uui-breadcrumb-item {
+				white-space: normal;
+				word-break: break-all;
+				flex-shrink: 1;
+			}
 		`,
 	];
 }

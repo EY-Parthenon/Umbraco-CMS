@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Breadcrumb Wrapping Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .resize-container {
+            border: 2px dashed #999;
+            padding: 10px;
+            resize: horizontal;
+            overflow: auto;
+            min-width: 200px;
+            max-width: 100%;
+        }
+        
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        h3 {
+            color: #666;
+            margin-top: 20px;
+        }
+        
+        /* Current Implementation (Problem) */
+        .current-breadcrumb {
+            /* Simulating the current workspace-variant-menu-breadcrumb styles */
+            overflow: hidden;
+            display: flex;
+            flex-direction: row-reverse;
+            margin-left: 24px;
+        }
+        
+        .current-breadcrumb uui-breadcrumbs {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Fixed Implementation */
+        .fixed-breadcrumb {
+            margin-left: 24px;
+            display: flex;
+        }
+        
+        .fixed-breadcrumb uui-breadcrumbs {
+            display: flex;
+            flex-wrap: wrap;
+            row-gap: 3px;
+            align-items: center;
+            gap: 8px;
+            max-height: calc(2 * 1.5em + 3px); /* Max 2 rows with 3px gap */
+            overflow: hidden;
+        }
+        
+        /* Simulating uui-breadcrumb-item */
+        uui-breadcrumb-item {
+            display: inline-flex;
+            align-items: center;
+            color: #515054;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        
+        .fixed-breadcrumb uui-breadcrumb-item {
+            white-space: normal;
+            word-break: break-all;
+        }
+        
+        uui-breadcrumb-item:not(:last-child)::after {
+            content: '>';
+            margin: 0 8px;
+            color: #999;
+        }
+        
+        uui-breadcrumb-item[href] {
+            color: #1b264f;
+            cursor: pointer;
+        }
+        
+        uui-breadcrumb-item[href]:hover {
+            text-decoration: underline;
+        }
+        
+        uui-breadcrumb-item[last-item] {
+            font-weight: 600;
+        }
+        
+        /* Custom CSS for the complete solution */
+        .complete-solution {
+            margin-left: 24px;
+        }
+        
+        .complete-solution uui-breadcrumbs {
+            display: flex;
+            flex-wrap: wrap;
+            row-gap: 3px;
+            column-gap: 0;
+            align-items: center;
+            max-height: calc(2 * 1.5em + 3px); /* Max 2 rows with 3px gap */
+            overflow: hidden;
+            line-height: 1.5;
+        }
+        
+        .complete-solution uui-breadcrumb-item {
+            display: inline-flex;
+            align-items: center;
+            white-space: normal;
+            word-break: break-all;
+            flex-shrink: 1;
+        }
+        
+        .complete-solution uui-breadcrumb-item:not(:last-child)::after {
+            content: '>';
+            margin: 0 8px;
+            color: #999;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Umbraco Breadcrumb Wrapping Test</h1>
+    
+    <div class="test-container">
+        <h2>1. Current Implementation (Problem)</h2>
+        <p>This shows the current behavior with overflow:hidden and flex-direction:row-reverse</p>
+        <div class="resize-container">
+            <div class="current-breadcrumb">
+                <uui-breadcrumbs>
+                    <uui-breadcrumb-item href="#">Home</uui-breadcrumb-item>
+                    <uui-breadcrumb-item href="#">Products and Services</uui-breadcrumb-item>
+                    <uui-breadcrumb-item href="#">Electronics and Gadgets</uui-breadcrumb-item>
+                    <uui-breadcrumb-item href="#">Mobile Phones and Accessories</uui-breadcrumb-item>
+                    <uui-breadcrumb-item href="#">Smartphones</uui-breadcrumb-item>
+                    <uui-breadcrumb-item last-item>iPhone 15 Pro Max 256GB Natural Titanium</uui-breadcrumb-item>
+                </uui-breadcrumbs>
+            </div>
+        </div>
+        <p><em>Resize the container above - text gets hidden with overflow</em></p>
+    </div>
+    
+    <div class="test-container">
+        <h2>2. Basic Fix (Wrapping Enabled)</h2>
+        <p>This shows basic wrapping with 3px row gap</p>
+        <div class="resize-container">
+            <div class="fixed-breadcrumb">
+                <uui-breadcrumbs>
+                    <uui-breadcrumb-item href="#">Home</uui-breadcrumb-item>
+                    <uui-breadcrumb-item href="#">Products and Services</uui-breadcrumb-item>
+                    <uui-breadcrumb-item href="#">Electronics and Gadgets</uui-breadcrumb-item>
+                    <uui-breadcrumb-item href="#">Mobile Phones and Accessories</uui-breadcrumb-item>
+                    <uui-breadcrumb-item href="#">Smartphones</uui-breadcrumb-item>
+                    <uui-breadcrumb-item last-item>iPhone 15 Pro Max 256GB Natural Titanium</uui-breadcrumb-item>
+                </uui-breadcrumbs>
+            </div>
+        </div>
+        <p><em>Resize the container - text wraps to multiple lines with 3px gap</em></p>
+    </div>
+    
+    <div class="test-container">
+        <h2>3. Complete Solution (Max 2 Rows)</h2>
+        <p>This shows the complete solution with max 2 rows, 3px gap, word-break, and no scrollbars</p>
+        <div class="resize-container">
+            <div class="complete-solution">
+                <uui-breadcrumbs>
+                    <uui-breadcrumb-item href="#">Home</uui-breadcrumb-item>
+                    <uui-breadcrumb-item href="#">Products and Services</uui-breadcrumb-item>
+                    <uui-breadcrumb-item href="#">Electronics and Gadgets</uui-breadcrumb-item>
+                    <uui-breadcrumb-item href="#">Mobile Phones and Accessories</uui-breadcrumb-item>
+                    <uui-breadcrumb-item href="#">Smartphones</uui-breadcrumb-item>
+                    <uui-breadcrumb-item last-item>iPhone 15 Pro Max 256GB Natural Titanium</uui-breadcrumb-item>
+                </uui-breadcrumbs>
+            </div>
+        </div>
+        <p><em>Resize the container - text wraps up to 2 rows maximum, words can break, no scrollbars</em></p>
+    </div>
+    
+    <div class="test-container">
+        <h2>4. Test with Very Long Items</h2>
+        <p>Testing with extremely long breadcrumb items</p>
+        <div class="resize-container">
+            <div class="complete-solution">
+                <uui-breadcrumbs>
+                    <uui-breadcrumb-item href="#">Home</uui-breadcrumb-item>
+                    <uui-breadcrumb-item href="#">ThisIsAVeryLongBreadcrumbItemWithNoSpacesToTestWordBreaking</uui-breadcrumb-item>
+                    <uui-breadcrumb-item href="#">AnotherExtremelyLongBreadcrumbItemThatShouldBreakProperly</uui-breadcrumb-item>
+                    <uui-breadcrumb-item last-item>CurrentPageWithAVeryDescriptiveNameThatMightBeQuiteLength</uui-breadcrumb-item>
+                </uui-breadcrumbs>
+            </div>
+        </div>
+        <p><em>Long items break mid-word when necessary</em></p>
+    </div>
+    
+    <div class="test-container">
+        <h2>CSS Solution to Apply</h2>
+        <pre><code>/* For workspace-menu-breadcrumb.element.ts */
+:host {
+    margin-left: var(--uui-size-layout-1);
+}
+
+uui-breadcrumbs {
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: 3px;
+    column-gap: 0;
+    align-items: center;
+    max-height: calc(2 * 1.5em + 3px); /* Max 2 rows */
+    overflow: hidden; /* No scrollbars */
+    line-height: 1.5;
+}
+
+uui-breadcrumb-item {
+    white-space: normal;
+    word-break: break-all;
+    flex-shrink: 1;
+}
+
+/* For workspace-variant-menu-breadcrumb.element.ts */
+:host {
+    margin-left: var(--uui-size-layout-1);
+    /* Remove: overflow: hidden; */
+    /* Remove: display: flex; */
+    /* Remove: flex-direction: row-reverse; */
+}
+
+uui-breadcrumbs {
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: 3px;
+    column-gap: 0;
+    align-items: center;
+    max-height: calc(2 * 1.5em + 3px); /* Max 2 rows */
+    overflow: hidden; /* No scrollbars */
+    line-height: 1.5;
+}
+
+uui-breadcrumb-item {
+    white-space: normal;
+    word-break: break-all;
+    flex-shrink: 1;
+}</code></pre>
+    </div>
+</body>
+</html>
