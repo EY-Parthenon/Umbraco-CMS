@@ -70,11 +70,14 @@ export abstract class UmbSubmittableWorkspaceContextBase<WorkspaceDataModelType>
 	}
 
 	/**
+	 * Validate the workspace. Default is to call the validation contexts validation method.
 	 * If a Workspace has multiple validation contexts, then this method can be overwritten to return the correct one.
+	 * @param options {Object} - Optional validation options.
+	 * @param options.focusOnError {boolean} - Whether to focus the first invalid element.
 	 * @returns Promise that resolves to void when the validation is complete.
 	 */
-	public async validate(): Promise<Array<void>> {
-		return await Promise.all(this.#validationContexts.map((context) => context.validate()));
+	public async validate(options?: { focusOnError?: boolean }): Promise<Array<void>> {
+		return await Promise.all(this.#validationContexts.map((context) => context.validate(options)));
 	}
 
 	public async requestSubmit(): Promise<void> {
@@ -84,8 +87,8 @@ export abstract class UmbSubmittableWorkspaceContextBase<WorkspaceDataModelType>
 		);
 	}
 
-	protected async _validateAndLog(): Promise<void> {
-		await this.validate().catch(async () => {
+	protected async _validateAndLog(focusOnError: boolean = true): Promise<void> {
+		await this.validate({ focusOnError }).catch(async () => {
 			// TODO: Implement developer-mode logging here. [NL]
 			console.warn(
 				'Validation failed because of these validation messages still begin present: ',

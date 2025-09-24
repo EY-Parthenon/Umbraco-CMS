@@ -25,8 +25,28 @@ function hasFocus(current: any, target: HTMLElement): boolean {
  */
 class UmbFocusDirective extends AsyncDirective {
 	static #next?: HTMLElement;
+	static #userInteracting: boolean = false;
 	#el?: HTMLElement;
 	#timeout?: number;
+	#retryCount: number = 0;
+	#maxRetries: number = 10;
+
+	static {
+		// Track user interaction globally to avoid focus stealing during typing
+		document.addEventListener('mousedown', () => {
+			UmbFocusDirective.#userInteracting = true;
+			setTimeout(() => {
+				UmbFocusDirective.#userInteracting = false;
+			}, 500);
+		});
+		
+		document.addEventListener('keydown', () => {
+			UmbFocusDirective.#userInteracting = true;
+			setTimeout(() => {
+				UmbFocusDirective.#userInteracting = false;
+			}, 500);
+		});
+	}
 
 	override render() {
 		return nothing;
@@ -35,6 +55,7 @@ class UmbFocusDirective extends AsyncDirective {
 	override update(part: ElementPart) {
 		if (this.#el !== part.element) {
 			UmbFocusDirective.#next = this.#el = part.element as HTMLElement;
+			this.#retryCount = 0;
 			this.#setFocus();
 		}
 		return nothing;
@@ -55,22 +76,41 @@ class UmbFocusDirective extends AsyncDirective {
 			clearTimeout(this.#timeout);
 			this.#timeout = undefined;
 		}
+		
+		// Don't steal focus while user is interacting
+		if (UmbFocusDirective.#userInteracting) {
+			return;
+		}
+		
+		// Stop retrying after max attempts to prevent infinite loops
+		if (this.#retryCount >= this.#maxRetries) {
+			UmbFocusDirective.#next = undefined;
+			return;
+		}
+		
 		// If this is the next element to focus, then try to focus it.
 		if (this.#el && this.#el === UmbFocusDirective.#next) {
 			this.#el.focus();
 			if (hasFocus(document.activeElement, this.#el) === false) {
+				this.#retryCount++;
 				this.#timeout = setTimeout(this.#setFocus, 100) as unknown as number;
 			} else {
 				UmbFocusDirective.#next = undefined;
+				this.#retryCount = 0;
 			}
 		}
 	};
 
 	override disconnected() {
+		if (this.#timeout) {
+			clearTimeout(this.#timeout);
+			this.#timeout = undefined;
+		}
 		if (this.#el === UmbFocusDirective.#next) {
 			UmbFocusDirective.#next = undefined;
 		}
 		this.#el = undefined;
+		this.#retryCount = 0;
 	}
 
 	//override reconnected() {}

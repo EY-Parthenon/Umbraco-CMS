@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Management Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .form-container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .field-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input:focus, textarea:focus {
+            outline: 2px solid #007bff;
+            border-color: #007bff;
+        }
+        .mandatory {
+            color: red;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .test-scenarios {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        h3 {
+            margin-top: 0;
+        }
+        ol {
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <h1>Focus Management Fix Test</h1>
+    
+    <div class="info">
+        <strong>Fix Applied:</strong> The focus management has been updated to prevent focus stealing during user interaction.
+        When you're typing in any field, mandatory field validation will not steal focus.
+    </div>
+
+    <div class="form-container">
+        <h2>Document Editor Simulation</h2>
+        
+        <div class="field-group">
+            <label for="title">Document Title</label>
+            <input type="text" id="title" placeholder="Enter document title">
+        </div>
+
+        <div class="field-group">
+            <label for="mandatory1">Mandatory Field 1 <span class="mandatory">*</span></label>
+            <input type="text" id="mandatory1" required placeholder="This field is required">
+            <div class="error" id="error1" style="display: none;">This field is required</div>
+        </div>
+
+        <div class="field-group">
+            <label for="optional">Optional Field</label>
+            <input type="text" id="optional" placeholder="Optional field">
+        </div>
+
+        <div class="field-group">
+            <label for="mandatory2">Mandatory Field 2 <span class="mandatory">*</span></label>
+            <textarea id="mandatory2" required placeholder="This field is required"></textarea>
+            <div class="error" id="error2" style="display: none;">This field is required</div>
+        </div>
+
+        <div class="field-group">
+            <label for="description">Description</label>
+            <textarea id="description" placeholder="Enter description"></textarea>
+        </div>
+
+        <button onclick="simulateSave()">Save Document</button>
+        <button onclick="validateWithoutFocus()">Validate (No Focus)</button>
+        <button onclick="clearForm()">Clear Form</button>
+    </div>
+
+    <div class="test-scenarios">
+        <h3>Test Scenarios:</h3>
+        <ol>
+            <li><strong>Test Focus Stealing Prevention:</strong>
+                <ul>
+                    <li>Leave "Mandatory Field 1" empty</li>
+                    <li>Click on "Document Title" field and start typing</li>
+                    <li>✅ Expected: Focus should remain on title field</li>
+                    <li>❌ Previous bug: Focus would jump to mandatory field</li>
+                </ul>
+            </li>
+            <li><strong>Test Save with Validation:</strong>
+                <ul>
+                    <li>Leave mandatory fields empty</li>
+                    <li>Click "Save Document"</li>
+                    <li>✅ Expected: Focus moves to first invalid field</li>
+                </ul>
+            </li>
+            <li><strong>Test Validation Without Focus:</strong>
+                <ul>
+                    <li>Leave mandatory fields empty</li>
+                    <li>Click "Validate (No Focus)"</li>
+                    <li>✅ Expected: Errors shown but focus doesn't change</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <script>
+        // Simulate the fixed behavior
+        let userInteracting = false;
+        let validationEnabled = true;
+
+        // Track user interaction
+        document.addEventListener('mousedown', () => {
+            userInteracting = true;
+            setTimeout(() => {
+                userInteracting = false;
+            }, 500);
+        });
+
+        document.addEventListener('keydown', () => {
+            userInteracting = true;
+            setTimeout(() => {
+                userInteracting = false;
+            }, 500);
+        });
+
+        // Simulate validation behavior
+        function validateForm(focusOnError = false) {
+            let isValid = true;
+            let firstInvalidField = null;
+
+            // Check mandatory field 1
+            const mandatory1 = document.getElementById('mandatory1');
+            const error1 = document.getElementById('error1');
+            if (!mandatory1.value.trim()) {
+                error1.style.display = 'block';
+                isValid = false;
+                if (!firstInvalidField) firstInvalidField = mandatory1;
+            } else {
+                error1.style.display = 'none';
+            }
+
+            // Check mandatory field 2
+            const mandatory2 = document.getElementById('mandatory2');
+            const error2 = document.getElementById('error2');
+            if (!mandatory2.value.trim()) {
+                error2.style.display = 'block';
+                isValid = false;
+                if (!firstInvalidField) firstInvalidField = mandatory2;
+            } else {
+                error2.style.display = 'none';
+            }
+
+            // Only focus if requested and user is not interacting
+            if (focusOnError && !userInteracting && firstInvalidField) {
+                firstInvalidField.focus();
+            }
+
+            return isValid;
+        }
+
+        // Simulate save action (with focus on error)
+        function simulateSave() {
+            console.log('Save triggered - will focus on first error');
+            if (validateForm(true)) {
+                alert('Document saved successfully!');
+                clearForm();
+            } else {
+                console.log('Validation failed - focus moved to first invalid field');
+            }
+        }
+
+        // Validate without focus (demonstrates the fix)
+        function validateWithoutFocus() {
+            console.log('Validation triggered - will NOT steal focus');
+            validateForm(false);
+        }
+
+        // Clear form
+        function clearForm() {
+            document.getElementById('title').value = '';
+            document.getElementById('mandatory1').value = '';
+            document.getElementById('mandatory2').value = '';
+            document.getElementById('optional').value = '';
+            document.getElementById('description').value = '';
+            document.getElementById('error1').style.display = 'none';
+            document.getElementById('error2').style.display = 'none';
+        }
+
+        // Simulate live validation (without focus stealing)
+        document.getElementById('mandatory1').addEventListener('blur', () => {
+            if (!userInteracting) {
+                validateForm(false);
+            }
+        });
+
+        document.getElementById('mandatory2').addEventListener('blur', () => {
+            if (!userInteracting) {
+                validateForm(false);
+            }
+        });
+
+        // Log focus changes for debugging
+        document.addEventListener('focusin', (e) => {
+            console.log('Focus moved to:', e.target.id || e.target.tagName);
+        });
+    </script>
+</body>
+</html>

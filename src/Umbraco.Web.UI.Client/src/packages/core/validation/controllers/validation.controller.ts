@@ -62,6 +62,7 @@ export class UmbValidationController extends UmbControllerBase implements UmbVal
 	#validators: Array<UmbValidator> = [];
 	#validationMode: boolean = false;
 	#isValid: boolean = false;
+	#autoFocusOnValidation: boolean = false;
 
 	#parent?: UmbValidationController;
 	#sync?: boolean;
@@ -376,11 +377,29 @@ export class UmbValidationController extends UmbControllerBase implements UmbVal
 	}
 
 	/**
+	 * Enable or disable automatic focus on first invalid element during validation.
+	 * @param enabled {boolean} - Whether to automatically focus the first invalid element.
+	 */
+	setAutoFocusOnValidation(enabled: boolean): void {
+		this.#autoFocusOnValidation = enabled;
+	}
+
+	/**
+	 * Get the current auto-focus setting.
+	 * @returns {boolean} - Whether auto-focus is enabled.
+	 */
+	getAutoFocusOnValidation(): boolean {
+		return this.#autoFocusOnValidation;
+	}
+
+	/**
 	 * Validate this context, all the validators of this context will be validated.
 	 * Notice its a recursive check meaning sub validation contexts also validates their validators.
+	 * @param options {Object} - Optional validation options.
+	 * @param options.focusOnError {boolean} - Whether to focus the first invalid element (overrides the default setting).
 	 * @returns succeed {Promise<boolean>} - Returns a promise that resolves to true if the validation succeeded.
 	 */
-	async validate(): Promise<void> {
+	async validate(options?: { focusOnError?: boolean }): Promise<void> {
 		this.#validationMode = true;
 
 		const resultsStatus =
@@ -417,8 +436,11 @@ export class UmbValidationController extends UmbControllerBase implements UmbVal
 					notValidValidators,
 				);
 			}
-			// Focus first invalid element:
-			this.focusFirstInvalidElement();
+			// Only focus first invalid element if auto-focus is enabled or explicitly requested:
+			const shouldFocus = options?.focusOnError !== undefined ? options.focusOnError : this.#autoFocusOnValidation;
+			if (shouldFocus) {
+				this.focusFirstInvalidElement();
+			}
 			return Promise.reject();
 		}
 
