@@ -137,11 +137,35 @@ export class UmbWorkspaceVariantMenuBreadcrumbElement extends UmbLitElement {
 		UmbTextStyles,
 		css`
 			:host {
-				/* TODO: This is a temp solution to handle an issue where long nested breadcrumbs would hide workspace actions */
-				overflow: hidden;
-				display: flex;
-				flex-direction: row-reverse;
 				margin-left: var(--uui-size-layout-1);
+				overflow-y: auto;
+				max-height: calc(var(--umb-footer-layout-height, 70px) - 20px);
+				padding: 10px 0;
+			}
+
+			/* Enable wrapping for the breadcrumbs container */
+			uui-breadcrumbs {
+				flex-wrap: wrap !important;
+				row-gap: 5px;
+				align-items: flex-start;
+			}
+
+			/* Remove max-width constraint on breadcrumb items to prevent truncation */
+			uui-breadcrumbs::part(breadcrumbs-list) {
+				flex-wrap: wrap !important;
+				row-gap: 5px;
+			}
+
+			/* Override the breadcrumb item's max-width to show full text */
+			uui-breadcrumb-item {
+				max-width: none !important;
+			}
+
+			/* Ensure proper styling for wrapped items */
+			uui-breadcrumb-item #link,
+			uui-breadcrumb-item #last-item {
+				max-width: none !important;
+				white-space: normal;
 			}
 		`,
 	];
