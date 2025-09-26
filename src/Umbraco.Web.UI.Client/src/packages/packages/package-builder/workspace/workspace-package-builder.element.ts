@@ -86,7 +86,7 @@ export class UmbWorkspacePackageBuilderElement extends UmbLitElement {
 
 	async #save() {
 		try {
-			await this.#validationContext.validate();
+			await this.#validationContext.validate({ focusOnError: true });
 			if (!this._package) return;
 
 			this._submitState = 'waiting';
@@ -107,7 +107,7 @@ export class UmbWorkspacePackageBuilderElement extends UmbLitElement {
 
 	async #update() {
 		try {
-			await this.#validationContext.validate();
+			await this.#validationContext.validate({ focusOnError: true });
 			if (!this._package?.unique) return;
 
 			this._submitState = 'waiting';

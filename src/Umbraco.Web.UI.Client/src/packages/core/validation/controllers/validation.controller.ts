@@ -378,9 +378,11 @@ export class UmbValidationController extends UmbControllerBase implements UmbVal
 	/**
 	 * Validate this context, all the validators of this context will be validated.
 	 * Notice its a recursive check meaning sub validation contexts also validates their validators.
-	 * @returns succeed {Promise<boolean>} - Returns a promise that resolves to true if the validation succeeded.
+	 * @param {Object} [options] - Optional configuration for validation behavior
+	 * @param {boolean} [options.focusOnError=false] - Whether to focus on first invalid element
+	 * @returns {Promise<void>} Returns a promise that resolves if validation succeeded, rejects if failed.
 	 */
-	async validate(): Promise<void> {
+	async validate(options?: { focusOnError?: boolean }): Promise<void> {
 		this.#validationMode = true;
 
 		const resultsStatus =
@@ -417,8 +419,10 @@ export class UmbValidationController extends UmbControllerBase implements UmbVal
 					notValidValidators,
 				);
 			}
-			// Focus first invalid element:
-			this.focusFirstInvalidElement();
+			// Only focus first invalid element if explicitly requested:
+			if (options?.focusOnError === true) {
+				this.focusFirstInvalidElement();
+			}
 			return Promise.reject();
 		}
 

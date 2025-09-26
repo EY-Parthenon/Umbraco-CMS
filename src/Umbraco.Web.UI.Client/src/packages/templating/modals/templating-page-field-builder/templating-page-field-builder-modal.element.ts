@@ -28,7 +28,7 @@ export class UmbTemplatingPageFieldBuilderModalElement extends UmbModalBaseEleme
 		this._submitButtonState = 'waiting';
 
 		try {
-			await this.#validation.validate();
+			await this.#validation.validate({ focusOnError: true });
 			this._submitButtonState = 'success';
 
 			this.value = { output: getUmbracoFieldSnippet(this._field!, this._default, this._recursive) };
