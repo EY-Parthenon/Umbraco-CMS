@@ -355,7 +355,8 @@ export class UmbValidationController extends UmbControllerBase implements UmbVal
 		this.#validators.push(validator);
 		//validator.addEventListener('change', this.#onValidatorChange);
 		if (this.#validationMode) {
-			this.validate();
+			// Don't focus when auto-validating on add
+			this.validate(false).catch(() => undefined);
 		}
 	}
 
@@ -368,9 +369,9 @@ export class UmbValidationController extends UmbControllerBase implements UmbVal
 		if (index !== -1) {
 			// Remove the validator:
 			this.#validators.splice(index, 1);
-			// If we are in validation mode then we should re-validate to focus next invalid element:
+			// If we are in validation mode then we should re-validate but not steal focus:
 			if (this.#validationMode) {
-				this.validate().catch(() => undefined);
+				this.validate(false).catch(() => undefined);
 			}
 		}
 	}
@@ -378,15 +379,16 @@ export class UmbValidationController extends UmbControllerBase implements UmbVal
 	/**
 	 * Validate this context, all the validators of this context will be validated.
 	 * Notice its a recursive check meaning sub validation contexts also validates their validators.
+	 * @param shouldFocusOnError {boolean} - If true, focus will be moved to the first invalid element when validation fails. Defaults to false.
 	 * @returns succeed {Promise<boolean>} - Returns a promise that resolves to true if the validation succeeded.
 	 */
-	async validate(): Promise<void> {
+	async validate(shouldFocusOnError = false): Promise<void> {
 		this.#validationMode = true;
 
 		const resultsStatus =
 			this.#validators.length === 0
 				? true
-				: await Promise.all(this.#validators.map((v) => v.validate())).then(
+				: await Promise.all(this.#validators.map((v) => v.validate(shouldFocusOnError))).then(
 						() => true,
 						() => false,
 					);
@@ -417,8 +419,10 @@ export class UmbValidationController extends UmbControllerBase implements UmbVal
 					notValidValidators,
 				);
 			}
-			// Focus first invalid element:
-			this.focusFirstInvalidElement();
+			// Only focus first invalid element if explicitly requested:
+			if (shouldFocusOnError) {
+				this.focusFirstInvalidElement();
+			}
 			return Promise.reject();
 		}
 

@@ -118,7 +118,8 @@ export class UmbServerModelValidatorContext extends UmbContextBase implements Um
 	get isValid(): boolean {
 		return this.#isValid;
 	}
-	async validate(): Promise<void> {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	async validate(shouldFocusOnError?: boolean): Promise<void> {
 		if (this.#validatePromise) {
 			await this.#validatePromise;
 		}

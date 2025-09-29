@@ -60,7 +60,8 @@ export class UmbFormControlValidator extends UmbControllerBase implements UmbVal
 	#setInvalid = this.#setIsValid.bind(this, false);
 	#setValid = this.#setIsValid.bind(this, true);
 
-	validate(): Promise<void> {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	validate(shouldFocusOnError?: boolean): Promise<void> {
 		this.#isValid = this.#control.checkValidity();
 		return this.#isValid ? Promise.resolve() : Promise.reject();
 	}

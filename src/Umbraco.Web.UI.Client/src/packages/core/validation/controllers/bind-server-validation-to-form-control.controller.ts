@@ -83,7 +83,8 @@ export class UmbBindServerValidationToFormControl extends UmbControllerBase {
 		this.#control.checkValidity();
 	}
 
-	validate(): Promise<void> {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	validate(shouldFocusOnError?: boolean): Promise<void> {
 		//this.#isValid = this.#control.checkValidity();
 		return this.#isValid ? Promise.resolve() : Promise.reject();
 	}

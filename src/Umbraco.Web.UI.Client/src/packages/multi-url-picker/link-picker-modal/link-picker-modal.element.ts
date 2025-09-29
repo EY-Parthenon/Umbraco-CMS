@@ -64,7 +64,8 @@ class UmbLinkPickerValueValidator extends UmbControllerBase implements UmbValida
 		});
 	}
 
-	async validate(): Promise<void> {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	async validate(shouldFocusOnError?: boolean): Promise<void> {
 		this.#isValid = !!this.getValue();
 
 		if (this.#isValid) {

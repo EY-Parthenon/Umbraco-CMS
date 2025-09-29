@@ -85,7 +85,8 @@ export class CustomValidationValidator extends UmbControllerBase implements UmbV
 		}
 	}
 
-	async validate(): Promise<void> {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	async validate(shouldFocusOnError?: boolean): Promise<void> {
 		// Validate is called when the validation state of this validator is asked to be fully resolved. Like when user clicks Save & Publish.
 		// If you need to ask the server then it could be done here, instead of asking the server each time the value changes.
 		// In this particular example we do not need to do anything, because our validation is represented via a message that we always set no matter the user interaction.
