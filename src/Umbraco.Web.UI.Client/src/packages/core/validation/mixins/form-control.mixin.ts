@@ -168,7 +168,11 @@ export function UmbFormControlMixin<
 				/*if (e.composedPath().some((x) => x === this)) {
 					return;
 				}*/
-				this.checkValidity();
+				// Only set pristine to false to show validation errors visually
+				// Don't call checkValidity() as it may trigger focus changes
+				// The full validation with focus will happen on form submission
+				this.pristine = false;
+				this._runValidators();
 			});
 		}
 
