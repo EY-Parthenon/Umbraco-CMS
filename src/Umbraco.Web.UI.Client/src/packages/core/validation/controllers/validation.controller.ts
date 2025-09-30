@@ -62,6 +62,7 @@ export class UmbValidationController extends UmbControllerBase implements UmbVal
 	#validators: Array<UmbValidator> = [];
 	#validationMode: boolean = false;
 	#isValid: boolean = false;
+	#hasFocusedInvalidElement: boolean = false;
 
 	#parent?: UmbValidationController;
 	#sync?: boolean;
@@ -368,8 +369,14 @@ export class UmbValidationController extends UmbControllerBase implements UmbVal
 		if (index !== -1) {
 			// Remove the validator:
 			this.#validators.splice(index, 1);
-			// If we are in validation mode then we should re-validate to focus next invalid element:
-			if (this.#validationMode) {
+			// Don't re-validate and re-focus if user is actively editing an input field
+			// This prevents focus from jumping away while the user is typing
+			const activeElement = document.activeElement;
+			const isUserEditing = activeElement && 
+				(activeElement.matches('input, textarea, select') || 
+				 activeElement.closest('uui-input, uui-textarea, uui-select'));
+			
+			if (this.#validationMode && !isUserEditing) {
 				this.validate().catch(() => undefined);
 			}
 		}
@@ -382,6 +389,8 @@ export class UmbValidationController extends UmbControllerBase implements UmbVal
 	 */
 	async validate(): Promise<void> {
 		this.#validationMode = true;
+		// Reset the focus flag when validation is explicitly triggered
+		this.#hasFocusedInvalidElement = false;
 
 		const resultsStatus =
 			this.#validators.length === 0
@@ -417,8 +426,11 @@ export class UmbValidationController extends UmbControllerBase implements UmbVal
 					notValidValidators,
 				);
 			}
-			// Focus first invalid element:
-			this.focusFirstInvalidElement();
+			// Focus first invalid element only once per validation cycle:
+			if (!this.#hasFocusedInvalidElement) {
+				this.focusFirstInvalidElement();
+				this.#hasFocusedInvalidElement = true;
+			}
 			return Promise.reject();
 		}
 
@@ -440,6 +452,7 @@ export class UmbValidationController extends UmbControllerBase implements UmbVal
 	 */
 	reset(): void {
 		this.#validationMode = false;
+		this.#hasFocusedInvalidElement = false;
 		this.messages.clear();
 		this.#validators.forEach((v) => v.reset());
 	}
