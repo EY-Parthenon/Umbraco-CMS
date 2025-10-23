@@ -508,6 +508,9 @@ export class UmbLinkPickerModalElement extends UmbModalBaseElement<UmbLinkPicker
 
 				&[readonly] {
 					margin-top: var(--uui-size-space-2);
+					overflow: hidden;
+					text-overflow: ellipsis;
+					white-space: nowrap;
 				}
 			}
 		`,
