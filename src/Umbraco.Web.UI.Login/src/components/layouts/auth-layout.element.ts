@@ -147,6 +147,9 @@ export class UmbAuthLayoutElement extends UmbLitElement {
 			#content-container {
 				background: var(--umb-login-content-background, none);
 				display: var(--umb-login-content-display, flex);
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
 				width: var(--umb-login-content-width, 100%);
 				height: var(--umb-login-content-height, 100%);
 				box-sizing: border-box;
